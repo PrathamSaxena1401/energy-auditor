@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Industrial Energy Auditor Pro Suite</title>
+  
+  <!-- Preconnect and fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pitch: '#000000',
+            deep: '#04060A',
+            surface: '#080D15',
+            card: '#0D1420',
+            cardHover: '#121B2B',
+            inputbg: '#050910',
+            borderSubtle: '#152233',
+            borderGlow: '#00FFB2',
+            neonGreen: '#00FFB2',
+            neonCyan: '#00E5FF',
+            neonAmber: '#FFB800',
+            neonRed: '#FF3366',
+            mutedText: '#7E92A7'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #000000; }
+    ::-webkit-scrollbar-thumb { background: #152233; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00FFB2; }
+
+    .glow-cyan-green {
+      box-shadow: 0 0 20px rgba(0, 255, 178, 0.12), inset 0 0 15px rgba(0, 229, 255, 0.03);
+    }
+    .text-glow-green { text-shadow: 0 0 12px rgba(0, 255, 178, 0.5); }
+    .text-glow-cyan { text-shadow: 0 0 12px rgba(0, 229, 255, 0.5); }
+    .badge-glow { box-shadow: 0 0 14px rgba(0, 255, 178, 0.35); }
+
+    input[type=range] {
+      accent-color: #00FFB2;
+    }
+
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      opacity: 0.25;
+    }
+
+    /* Active Tab Glow */
+    .tab-active {
+      background: rgba(0, 255, 178, 0.1) !important;
+      color: #00FFB2 !important;
+      border-color: rgba(0, 255, 178, 0.5) !important;
+      box-shadow: 0 0 10px rgba(0, 255, 178, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-pitch text-gray-100 font-sans min-h-screen flex flex-col antialiased selection:bg-neonGreen selection:text-black">
+
+  <header class="sticky top-0 z-50 bg-black/95 backdrop-blur-md border-b border-borderSubtle">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
+      
+      <!-- Brand & Status -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="flex-shrink-0 bg-neonGreen text-black font-extrabold text-xs px-2.5 py-1.5 rounded-lg badge-glow flex items-center gap-1">
+            <span>⚡</span>
+            <span>AUDIT-PRO</span>
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-xs sm:text-sm font-bold text-white tracking-tight truncate flex items-center gap-1.5">
+              <span>Industrial Energy Auditor</span>
+              <span class="text-[9px] font-mono text-neonCyan bg-neonCyan/10 px-1.5 py-0.5 rounded border border-neonCyan/30">BEE & IEEE 519</span>
+            </h1>
+            <p class="text-[10px] text-mutedText truncate">Field Engineering Calculations & Oscilloscope Suite</p>
+          </div>
+        </div>
+
+        <div class="md:hidden flex items-center gap-1.5 font-mono text-[10px] text-neonGreen">
+          <span class="w-1.5 h-1.5 rounded-full bg-neonGreen animate-pulse"></span> READY
+        </div>
+      </div>
+
+      <!-- 4 Tab Switchers Navigation -->
+      <nav class="flex items-center bg-deep border border-borderSubtle rounded-lg p-1 gap-1 overflow-x-auto text-xs no-scrollbar">
+        <button id="btnTab1" onclick="switchNavTab('calculator')" class="tab-active whitespace-nowrap px-3 py-1.5 rounded-md font-semibold text-mutedText hover:text-white border border-transparent transition-all flex items-center gap-1.5">
+          <span>📊</span>
+          <span>1. Audit Calculator</span>
+        </button>
+
+        <button id="btnTab2" onclick="switchNavTab('dualplotter')" class="whitespace-nowrap px-3 py-1.5 rounded-md font-semibold text-mutedText hover:text-white border border-transparent transition-all flex items-center gap-1.5">
+          <span>⚡</span>
+          <span>2. V vs I Phase (Lag/Lead)</span>
+        </button>
+
+        <button id="btnTab3" onclick="switchNavTab('harmonics')" class="whitespace-nowrap px-3 py-1.5 rounded-md font-semibold text-mutedText hover:text-white border border-transparent transition-all flex items-center gap-1.5">
+          <span>📈</span>
+          <span>3. Harmonics & Filter</span>
+        </button>
+
+        <button id="btnTab4" onclick="switchNavTab('converter')" class="whitespace-nowrap px-3 py-1.5 rounded-md font-semibold text-mutedText hover:text-white border border-transparent transition-all flex items-center gap-1.5">
+          <span>🔄</span>
+          <span>4. Unit Converter</span>
+        </button>
+      </nav>
+
+    </div>
+  </header>
+
+  <main class="max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 flex-1">
+    
+    <!-- ========================================================================= -->
+    <!-- TAB 1: AUDIT CALCULATOR (6 CATEGORIES WITH FIELD FORMULAE & DYNAMIC INPUTS)-->
+    <!-- ========================================================================= -->
+    <div id="tab1Section" class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      
+      <!-- Left Selector Sidebar -->
+      <aside class="lg:col-span-4 flex flex-col gap-4">
+        <div class="bg-card border border-borderSubtle rounded-xl p-4 glow-cyan-green">
+          <div class="flex items-center justify-between mb-3 border-b border-borderSubtle/60 pb-2">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-neonGreen flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-neonGreen animate-pulse"></span>
+              Audit Formula Navigator
+            </span>
+            <span class="text-[10px] text-neonCyan font-mono bg-neonCyan/10 border border-neonCyan/30 px-1.5 py-0.5 rounded">6 Categories</span>
+          </div>
+
+          <!-- Category Selection -->
+          <div class="mb-3">
+            <label for="calcCatSelect" class="block text-[11px] font-mono font-semibold text-mutedText mb-1.5">1. SELECT FIELD AUDIT CATEGORY</label>
+            <div class="relative">
+              <select id="calcCatSelect" onchange="handleCatChange()" class="w-full bg-inputbg text-white border border-borderSubtle focus:border-neonGreen focus:ring-1 focus:ring-neonGreen text-xs rounded-lg p-2.5 outline-none cursor-pointer pr-8 font-medium">
+                <option value="cat1">Cat 1: Electrical Fundamentals & Power Relations</option>
+                <option value="cat2">Cat 2: PF Correction & Cable Loss</option>
+                <option value="cat3">Cat 3: Transformer Energy Audit</option>
+                <option value="cat4">Cat 4: Electric Motors Audit</option>
+                <option value="cat5">Cat 5: Power Quality & Harmonics</option>
+                <option value="cat6">Cat 6: Plant Utilities (Compressors & Pumps)</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-mutedText">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formula Selection -->
+          <div>
+            <label for="calcFormulaSelect" class="block text-[11px] font-mono font-semibold text-mutedText mb-1.5">2. SELECT AUDIT FORMULA / PARAMETER</label>
+            <div class="relative">
+              <select id="calcFormulaSelect" onchange="handleFormulaChange()" class="w-full bg-inputbg text-white border border-borderSubtle focus:border-neonCyan focus:ring-1 focus:ring-neonCyan text-xs rounded-lg p-2.5 outline-none cursor-pointer pr-8 font-medium">
+                <!-- Populated dynamically -->
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-mutedText">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Reference Card -->
+        <div class="bg-surface border border-borderSubtle rounded-xl p-3.5 text-xs text-mutedText flex flex-col gap-2">
+          <div class="font-mono text-neonCyan font-bold flex items-center gap-1.5 text-[11px]">
+            <span>💡</span> BEE Auditor Field Rule
+          </div>
+          <p class="leading-relaxed text-[11px] text-gray-300">
+            Before applying capacitor banks, always verify that the non-linear harmonic load (VFDs, Rectifiers, UPS) is under 20% of transformer capacity. If higher, series <span class="text-neonGreen font-mono">7% detuned reactors</span> are mandatory to prevent resonance failure.
+          </p>
+        </div>
+      </aside>
+
+      <!-- Right Engine & Results -->
+      <section class="lg:col-span-8 flex flex-col gap-4">
+        
+        <!-- Formula Display Card -->
+        <div class="bg-card border border-borderSubtle rounded-xl p-4 sm:p-5 relative overflow-hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <span id="badgeCategory" class="text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-neonGreen bg-neonGreen/10 border border-neonGreen/30 px-2 py-0.5 rounded">
+              Category 1: Electrical Fundamentals
+            </span>
+            <button onclick="copyCurrentFormula()" class="text-[11px] font-mono text-mutedText hover:text-white flex items-center gap-1 bg-surface border border-borderSubtle px-2 py-1 rounded hover:border-neonCyan transition-colors">
+              <span id="copyIcon">📋</span>
+              <span id="copyText">Copy Formula</span>
+            </button>
+          </div>
+
+          <h2 id="displayParamTitle" class="text-base sm:text-lg font-bold text-white mb-2 tracking-tight">Active Power (P)</h2>
+          
+          <div class="bg-pitch border border-neonGreen/30 rounded-lg p-3 my-2.5 overflow-x-auto shadow-inner">
+            <div id="displayFormulaCode" class="font-mono text-xs sm:text-sm font-semibold text-neonGreen whitespace-nowrap">
+              P = √3 · VL · IL · cosφ × 10⁻³ [kW]
+            </div>
+          </div>
+
+          <div class="mt-2.5 flex items-start gap-2 text-xs bg-surface border-l-2 border-neonCyan p-2.5 rounded-r-lg">
+            <div class="text-neonCyan flex-shrink-0 mt-0.5">🎯</div>
+            <div class="text-gray-300">
+              <strong class="text-neonCyan font-semibold">Auditor Field Application:</strong>
+              <span id="displayFieldApp" class="ml-1 text-mutedText">Machine ki actual shaft work aur thermal output nikalna.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Inputs Card -->
+        <div class="bg-card border border-borderSubtle rounded-xl p-4 sm:p-5">
+          <div class="flex items-center justify-between mb-3 border-b border-borderSubtle pb-2">
+            <h3 class="text-xs font-mono font-bold uppercase text-neonGreen flex items-center gap-1.5">
+              <span>📝</span> Measured Field Inputs
+            </h3>
+            <span class="text-[10px] text-neonCyan font-mono">Instant real-time computing</span>
+          </div>
+
+          <form id="dynamicFieldsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onsubmit="event.preventDefault(); recalculate();">
+            <!-- Dynamic Fields -->
+          </form>
+        </div>
+
+        <!-- Computed Result Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="bg-surface border border-neonGreen/40 rounded-xl p-4 glow-cyan-green">
+            <div class="text-[10px] font-mono font-bold text-mutedText uppercase tracking-wider mb-1 flex items-center justify-between">
+              <span>Primary Computed Parameter</span>
+              <span class="w-2 h-2 rounded-full bg-neonGreen"></span>
+            </div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <div id="resPrimaryValue" class="text-2xl sm:text-3xl font-mono font-extrabold text-neonGreen text-glow-green">0.00</div>
+              <div id="resPrimaryUnit" class="text-xs sm:text-sm font-mono font-semibold text-neonCyan">kW</div>
+            </div>
+            <div id="resPrimaryDesc" class="text-[11px] text-mutedText mt-1 font-mono">Actual Load Demand</div>
+          </div>
+
+          <div class="bg-surface border border-neonCyan/30 rounded-xl p-4">
+            <div class="text-[10px] font-mono font-bold text-mutedText uppercase tracking-wider mb-1 flex items-center justify-between">
+              <span id="resSecondaryTitle">Derived Audit Metric</span>
+              <span class="w-2 h-2 rounded-full bg-neonCyan"></span>
+            </div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <div id="resSecondaryValue" class="text-2xl sm:text-3xl font-mono font-extrabold text-neonCyan text-glow-cyan">0.00</div>
+              <div id="resSecondaryUnit" class="text-xs sm:text-sm font-mono font-semibold text-neonGreen">kVA</div>
+            </div>
+            <div id="resSecondaryDesc" class="text-[11px] text-mutedText mt-1 font-mono">Transformer Burden</div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: AC WAVEFORM & PHASE VISUALIZER (VOLTAGE VS CURRENT DUAL TRACE)      -->
+    <!-- ========================================================================= -->
+    <div id="tab2Section" class="hidden flex flex-col gap-4">
+      
+      <div class="bg-card border border-borderSubtle rounded-xl p-4 sm:p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-neonCyan bg-neonCyan/10 border border-neonCyan/30 px-2 py-0.5 rounded">
+            Dual-Trace AC Oscilloscope (Voltage vs Current)
+          </span>
+          <div class="flex items-center gap-2">
+            <button id="btnPlayPause" onclick="toggleWaveAnimation()" class="text-xs font-mono bg-neonGreen/10 border border-neonGreen/40 text-neonGreen hover:bg-neonGreen/20 px-3 py-1 rounded transition-colors flex items-center gap-1">
+              <span id="playIcon">⏸</span>
+              <span id="playLabel">Pause Wave</span>
+            </button>
+            <button onclick="resetPhaseValues()" class="text-xs font-mono bg-surface border border-borderSubtle text-mutedText hover:text-white px-2.5 py-1 rounded transition-colors">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <h2 class="text-base sm:text-lg font-bold text-white mb-1">Interactive AC Sine Wave: Voltage [V] and Current [I] Phase Interaction</h2>
+        <p class="text-xs text-mutedText mb-3">
+          Configure amplitude, angular frequency (ω), time window, and individual phase angles (φ_v, φ_i) to instantly visualize <strong>Leading</strong>, <strong>Lagging</strong>, or <strong>In-Phase (Unity)</strong> power factor conditions.
+        </p>
+
+        <!-- Canvas Oscilloscope Viewport -->
+        <div class="bg-pitch border border-borderSubtle rounded-xl overflow-hidden relative shadow-2xl">
+          <div class="absolute top-2 left-3 z-10 flex flex-wrap items-center gap-3 text-[10px] font-mono bg-black/60 px-2 py-1 rounded border border-borderSubtle">
+            <span class="flex items-center gap-1.5 text-neonCyan font-bold">
+              <span class="w-3 h-1 bg-neonCyan rounded-full"></span> Voltage Trace V(t)
+            </span>
+            <span class="flex items-center gap-1.5 text-neonGreen font-bold">
+              <span class="w-3 h-1 bg-neonGreen rounded-full"></span> Current Trace I(t)
+            </span>
+            <span class="text-mutedText">| Time scale: <span id="timeScaleBadge" class="text-white">40.0 ms</span></span>
+          </div>
+
+          <canvas id="dualWaveCanvas" class="w-full h-64 sm:h-72 block bg-pitch cursor-crosshair"></canvas>
+        </div>
+
+        <!-- Controls: V, I, omega, phi_v, phi_i, time window -->
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          
+          <!-- Voltage Peak -->
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span class="text-neonCyan">Peak Voltage (Vm)</span>
+              <span id="valVmText" class="text-neonCyan font-bold">325 V</span>
+            </div>
+            <input type="range" id="inputVm" min="50" max="600" step="5" value="325" oninput="updateDualWaveform()" class="w-full" />
+            <div class="text-[10px] text-mutedText/70 font-mono mt-0.5">230V RMS = ~325V Peak</div>
+          </div>
+
+          <!-- Current Peak -->
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span class="text-neonGreen">Peak Current (Im)</span>
+              <span id="valImText" class="text-neonGreen font-bold">100 A</span>
+            </div>
+            <input type="range" id="inputIm" min="5" max="300" step="5" value="100" oninput="updateDualWaveform()" class="w-full" />
+            <div class="text-[10px] text-mutedText/70 font-mono mt-0.5">Trace scaled for visual clarity</div>
+          </div>
+
+          <!-- Frequency / Omega -->
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span>Freq (f) &amp; ω</span>
+              <span id="valFreqText" class="text-white font-bold">50 Hz</span>
+            </div>
+            <input type="range" id="inputFreq" min="20" max="100" step="5" value="50" oninput="updateDualWaveform()" class="w-full" />
+            <div id="valOmegaText" class="text-[10px] text-neonTeal font-mono mt-0.5">ω = 314.16 rad/s</div>
+          </div>
+
+          <!-- Voltage Phase Angle -->
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span class="text-neonCyan">V Phase (φ_v)</span>
+              <span id="valPhiVText" class="text-neonCyan font-bold">0°</span>
+            </div>
+            <input type="range" id="inputPhiV" min="-180" max="180" step="5" value="0" oninput="updateDualWaveform()" class="w-full" />
+            <div class="text-[10px] text-mutedText/70 font-mono mt-0.5">Reference Angle</div>
+          </div>
+
+          <!-- Current Phase Angle -->
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span class="text-neonGreen">I Phase (φ_i)</span>
+              <span id="valPhiIText" class="text-neonGreen font-bold">-36.8°</span>
+            </div>
+            <input type="range" id="inputPhiI" min="-180" max="180" step="1" value="-37" oninput="updateDualWaveform()" class="w-full" />
+            <div class="text-[10px] text-mutedText/70 font-mono mt-0.5">Shift current lead/lag</div>
+          </div>
+
+          <!-- Time Window Span -->
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span>Time Window</span>
+              <span id="valTimeSpanText" class="text-white font-bold">40 ms</span>
+            </div>
+            <input type="range" id="inputTimeSpan" min="10" max="100" step="5" value="40" oninput="updateDualWaveform()" class="w-full" />
+            <div class="text-[10px] text-mutedText/70 font-mono mt-0.5">Display window (2 cycles @50Hz)</div>
+          </div>
+
+        </div>
+
+        <!-- Auditor Diagnosis & Leading/Lagging Indicator -->
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+          
+          <!-- Phase Difference Card -->
+          <div class="bg-surface border border-borderSubtle p-3.5 rounded-xl">
+            <div class="text-[10px] font-mono uppercase text-mutedText">Phase Difference (Δφ = φ_v - φ_i)</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span id="diagDeltaPhi" class="text-2xl font-mono font-bold text-neonCyan">37.0°</span>
+              <span id="diagDeltaRad" class="text-xs font-mono text-mutedText">(0.65 rad)</span>
+            </div>
+            <div class="text-[10px] text-mutedText font-mono mt-1">Positive Δφ means Current lags Voltage</div>
+          </div>
+
+          <!-- Power Factor Card -->
+          <div class="bg-surface border border-borderSubtle p-3.5 rounded-xl">
+            <div class="text-[10px] font-mono uppercase text-mutedText">Displacement Power Factor (cos Δφ)</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span id="diagPfVal" class="text-2xl font-mono font-bold text-neonGreen">0.799</span>
+              <span class="text-xs font-mono text-neonGreen">PF</span>
+            </div>
+            <div id="diagPfLoss" class="text-[10px] text-mutedText font-mono mt-1">Penalty threshold: &lt; 0.90</div>
+          </div>
+
+          <!-- Power Factor State (Leading / Lagging / Unity) -->
+          <div class="bg-surface border border-borderSubtle p-3.5 rounded-xl">
+            <div class="text-[10px] font-mono uppercase text-mutedText">Load Operating Nature</div>
+            <div id="diagNatureBadge" class="mt-1 inline-flex items-center gap-1.5 text-xs font-mono font-bold px-2.5 py-1 rounded bg-neonAmber/10 text-neonAmber border border-neonAmber/40">
+              <span>⚠️</span>
+              <span>LAGGING (Inductive Load)</span>
+            </div>
+            <div id="diagNatureDesc" class="text-[10px] text-mutedText font-mono mt-1.5">
+              Current wave reaches positive peak AFTER voltage wave.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: HARMONICS SYNTHESIZER & FILTER SIZING (FOURIER & IEEE 519)          -->
+    <!-- ========================================================================= -->
+    <div id="tab3Section" class="hidden flex flex-col gap-4">
+      
+      <div class="bg-card border border-borderSubtle rounded-xl p-4 sm:p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-neonCyan bg-neonCyan/10 border border-neonCyan/30 px-2 py-0.5 rounded">
+            Harmonic Distortion &amp; Filter Sizing
+          </span>
+          <span class="text-xs font-mono text-neonGreen">Real-Time Fourier Synthesis</span>
+        </div>
+
+        <h2 class="text-base sm:text-lg font-bold text-white mb-1">Non-Linear Waveform Distortion &amp; Detuned Reactor Design</h2>
+        <p class="text-xs text-mutedText">
+          Industrial non-linear loads (VFDs, Rectifiers, Induction Furnaces) introduce 3rd, 5th, 7th, 9th, and 11th harmonic currents. Visual cyan line is the 50Hz pure fundamental; glowing neon line represents the actual polluted waveform.
+        </p>
+
+        <!-- Canvas Oscilloscope Viewport -->
+        <div class="mt-3.5 bg-pitch border border-borderSubtle rounded-xl overflow-hidden relative shadow-2xl">
+          <div class="absolute top-2 left-3 z-10 flex flex-wrap items-center gap-3 text-[10px] font-mono bg-black/60 px-2 py-1 rounded border border-borderSubtle">
+            <span class="flex items-center gap-1.5 text-neonCyan font-bold">
+              <span class="w-3 h-0.5 border-t border-dashed border-neonCyan"></span> Pure Fundamental 50Hz
+            </span>
+            <span class="flex items-center gap-1.5 text-neonGreen font-bold">
+              <span class="w-3 h-1 bg-neonGreen rounded-full"></span> Synthesized Polluted Wave
+            </span>
+          </div>
+
+          <canvas id="harmonicCanvas" class="w-full h-60 sm:h-68 block bg-pitch cursor-crosshair"></canvas>
+        </div>
+
+        <!-- Harmonic Amplitudes Sliders -->
+        <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span class="text-neonCyan">H1 (50Hz)</span>
+              <span id="harm1Val" class="text-neonCyan font-bold">100%</span>
+            </div>
+            <input type="range" id="sliderH1" min="20" max="100" value="100" class="w-full" oninput="updateHarmonicSlider('h1', this.value)" />
+            <div class="text-[10px] text-mutedText/70 font-mono mt-0.5">Fundamental Base</div>
+          </div>
+
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span>H3 (150Hz)</span>
+              <span id="harm3Val" class="text-white font-bold">5%</span>
+            </div>
+            <input type="range" id="sliderH3" min="0" max="60" value="5" class="w-full" oninput="updateHarmonicSlider('h3', this.value)" />
+            <div class="text-[10px] text-mutedText/70 font-mono mt-0.5">Triplen / Single Phase</div>
+          </div>
+
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span class="text-neonGreen">H5 (250Hz)</span>
+              <span id="harm5Val" class="text-neonGreen font-bold">22%</span>
+            </div>
+            <input type="range" id="sliderH5" min="0" max="70" value="22" class="w-full" oninput="updateHarmonicSlider('h5', this.value)" />
+            <div class="text-[10px] text-neonGreen/80 font-mono mt-0.5">Dominant 6-pulse VFD</div>
+          </div>
+
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span>H7 (350Hz)</span>
+              <span id="harm7Val" class="text-white font-bold">12%</span>
+            </div>
+            <input type="range" id="sliderH7" min="0" max="60" value="12" class="w-full" oninput="updateHarmonicSlider('h7', this.value)" />
+            <div class="text-[10px] text-mutedText/70 font-mono mt-0.5">Secondary drive mode</div>
+          </div>
+
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span>H9 (450Hz)</span>
+              <span id="harm9Val" class="text-white font-bold">3%</span>
+            </div>
+            <input type="range" id="sliderH9" min="0" max="40" value="3" class="w-full" oninput="updateHarmonicSlider('h9', this.value)" />
+            <div class="text-[10px] text-mutedText/70 font-mono mt-0.5">High order triplen</div>
+          </div>
+
+          <div class="bg-surface p-2.5 rounded-lg border border-borderSubtle">
+            <div class="flex justify-between items-center text-[11px] font-mono text-mutedText mb-1">
+              <span>H11 (550Hz)</span>
+              <span id="harm11Val" class="text-white font-bold">6%</span>
+            </div>
+            <input type="range" id="sliderH11" min="0" max="50" value="6" class="w-full" oninput="updateHarmonicSlider('h11', this.value)" />
+            <div class="text-[10px] text-mutedText/70 font-mono mt-0.5">High frequency ringing</div>
+          </div>
+
+        </div>
+
+        <!-- Filter Sizing & Compliance Cards -->
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          
+          <div class="bg-surface border border-borderSubtle p-3.5 rounded-xl">
+            <div class="text-[10px] font-mono uppercase text-mutedText">Total Harmonic Distortion (THD)</div>
+            <div class="flex items-baseline gap-1.5 mt-1">
+              <span id="thdCalculated" class="text-2xl font-mono font-bold text-neonGreen">26.1</span>
+              <span class="text-xs font-mono text-neonCyan">%</span>
+            </div>
+            <div class="text-[10px] text-mutedText font-mono mt-1">Root-sum-square over Fundamental</div>
+          </div>
+
+          <div class="bg-surface border border-borderSubtle p-3.5 rounded-xl">
+            <div class="text-[10px] font-mono uppercase text-mutedText">IEEE 519 Busbar Compliance</div>
+            <div id="ieeeComplianceBadge" class="mt-1 inline-flex items-center text-xs font-mono font-bold px-2 py-0.5 rounded bg-neonRed/10 text-neonRed border border-neonRed/30">
+              NON-COMPLIANT (&gt;5.0%)
+            </div>
+            <div class="text-[10px] text-mutedText font-mono mt-1">Standard industrial PCC limit is 5.0% THD_V</div>
+          </div>
+
+          <div class="bg-surface border border-borderSubtle p-3.5 rounded-xl">
+            <div class="text-[10px] font-mono uppercase text-mutedText">Detuned Reactor Tuning Recommendation</div>
+            <div class="text-xs font-mono font-bold text-neonCyan mt-1">
+              p = 7.0% Reactor (189 Hz Tuning)
+            </div>
+            <div class="text-[10px] text-mutedText font-mono mt-1">Prevents 5th harmonic resonance &amp; over-voltage stress</div>
+          </div>
+
+        </div>
+
+        <!-- Detuned Reactor Interactive Sizing Calculator -->
+        <div class="mt-4 bg-surface p-4 rounded-xl border border-borderSubtle">
+          <div class="flex items-center justify-between mb-3 border-b border-borderSubtle/60 pb-2">
+            <span class="text-xs font-mono font-bold text-neonCyan uppercase tracking-wider">
+              ⚙️ Capacitor Bank &amp; Series Reactor Matching Tool
+            </span>
+            <span class="text-[10px] font-mono text-mutedText">Field Design Helper</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[11px] font-mono text-mutedText mb-1">Capacitor Step (kVAR)</label>
+              <input type="number" id="filtQcap" value="100" step="5" oninput="calcFilterDesign()" class="w-full bg-inputbg text-neonGreen font-mono font-bold px-2.5 py-1.5 rounded border border-borderSubtle outline-none text-xs" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-mono text-mutedText mb-1">Detuning Factor (p %)</label>
+              <select id="filtFactor" onchange="calcFilterDesign()" class="w-full bg-inputbg text-white font-mono px-2.5 py-1.5 rounded border border-borderSubtle outline-none text-xs">
+                <option value="5.67">p = 5.67% (f_res = 210 Hz) - General</option>
+                <option value="7.0" selected>p = 7.00% (f_res = 189 Hz) - Standard 5th</option>
+                <option value="14.0">p = 14.00% (f_res = 134 Hz) - 3rd Harmonic heavy</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-mono text-mutedText mb-1">Bus Line Voltage (V)</label>
+              <input type="number" id="filtVsys" value="415" step="5" oninput="calcFilterDesign()" class="w-full bg-inputbg text-white font-mono font-bold px-2.5 py-1.5 rounded border border-borderSubtle outline-none text-xs" />
+            </div>
+          </div>
+
+          <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono bg-card p-3 rounded-lg border border-borderSubtle">
+            <div>
+              <div class="text-[10px] text-mutedText">Resonant Freq (f_res):</div>
+              <div id="filtResFreq" class="text-neonCyan font-bold">189.0 Hz</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-mutedText">Capacitor Rating Needed:</div>
+              <div id="filtCapRating" class="text-neonGreen font-bold">446 V Rated</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-mutedText">Effective Output @415V:</div>
+              <div id="filtEffQ" class="text-white font-bold">107.5 kVAR</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-mutedText">Series Reactor Rating:</div>
+              <div id="filtReactKvar" class="text-neonAmber font-bold">7.5 kVAR</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: COMPREHENSIVE INDUSTRIAL UNIT CONVERTER                           -->
+    <!-- ========================================================================= -->
+    <div id="tab4Section" class="hidden flex flex-col gap-4">
+      
+      <div class="bg-card border border-borderSubtle rounded-xl p-4 sm:p-5">
+        <div class="flex items-center justify-between mb-3 border-b border-borderSubtle pb-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+              <span>🔄</span>
+              <span>Industrial Auditor Unit Converter Suite</span>
+            </h2>
+            <p class="text-xs text-mutedText">Bi-directional real-time conversions for plant audit calculations</p>
+          </div>
+          <span class="text-[10px] bg-neonCyan/10 text-neonCyan border border-neonCyan/30 px-2 py-0.5 rounded font-mono hidden sm:inline-block">Field Ready</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          
+          <!-- Card 1: Electric & Mechanical Power -->
+          <div class="bg-surface border border-borderSubtle rounded-xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono font-bold text-neonGreen mb-2">
+                <span>⚡ Power (HP ⇄ kW)</span>
+                <span class="text-[10px] text-mutedText">1 HP = 0.7457 kW</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">Horsepower (HP)</label>
+                  <input type="number" id="ucHp" placeholder="HP" oninput="convPower('hp', this.value)" class="w-full bg-inputbg text-neonGreen font-mono font-bold p-2 rounded border border-borderSubtle focus:border-neonGreen outline-none text-xs" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">Kilowatts (kW)</label>
+                  <input type="number" id="ucKw" placeholder="kW" oninput="convPower('kw', this.value)" class="w-full bg-inputbg text-neonCyan font-mono font-bold p-2 rounded border border-borderSubtle focus:border-neonCyan outline-none text-xs" />
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] font-mono text-mutedText/80 mt-2.5 text-right">Metric HP vs Imperial HP ≈ 0.7355 vs 0.7457 kW</div>
+          </div>
+
+          <!-- Card 2: Thermal Energy & Fuel -->
+          <div class="bg-surface border border-borderSubtle rounded-xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono font-bold text-neonCyan mb-2">
+                <span>🔥 Thermal Energy (kcal ⇄ kWh ⇄ BTU)</span>
+                <span class="text-[10px] text-mutedText">1 kWh = 860 kcal</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">Kilocalories (kcal)</label>
+                  <input type="number" id="ucKcal" placeholder="kcal" oninput="convThermal('kcal', this.value)" class="w-full bg-inputbg text-neonGreen font-mono font-bold p-2 rounded border border-borderSubtle focus:border-neonGreen outline-none text-xs" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">Kilowatt-Hours (kWh)</label>
+                  <input type="number" id="ucKwh" placeholder="kWh" oninput="convThermal('kwh', this.value)" class="w-full bg-inputbg text-neonCyan font-mono font-bold p-2 rounded border border-borderSubtle focus:border-neonCyan outline-none text-xs" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">BTU (British Thermal Unit)</label>
+                  <input type="number" id="ucBtu" placeholder="BTU" oninput="convThermal('btu', this.value)" class="w-full bg-inputbg text-white font-mono font-bold p-2 rounded border border-borderSubtle focus:border-white outline-none text-xs" />
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] font-mono text-mutedText/80 mt-2 text-right">Boiler &amp; Furnace heat balance</div>
+          </div>
+
+          <!-- Card 3: Refrigeration & HVAC (TR) -->
+          <div class="bg-surface border border-borderSubtle rounded-xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono font-bold text-neonTeal mb-2">
+                <span>❄️ Refrigeration / Chillers (TR)</span>
+                <span class="text-[10px] text-mutedText">1 TR = 3.5168 kW</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">Tons of Refrigeration (TR)</label>
+                  <input type="number" id="ucTr" placeholder="TR" oninput="convChiller('tr', this.value)" class="w-full bg-inputbg text-neonGreen font-mono font-bold p-2 rounded border border-borderSubtle focus:border-neonGreen outline-none text-xs" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">Cooling Capacity (kW Thermal)</label>
+                  <input type="number" id="ucTrKw" placeholder="kW (Thermal)" oninput="convChiller('kw', this.value)" class="w-full bg-inputbg text-neonCyan font-mono font-bold p-2 rounded border border-borderSubtle focus:border-neonCyan outline-none text-xs" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">Heat Extraction (kcal/hr)</label>
+                  <input type="number" id="ucTrKcal" placeholder="kcal/hr" oninput="convChiller('kcal', this.value)" class="w-full bg-inputbg text-white font-mono font-bold p-2 rounded border border-borderSubtle focus:border-white outline-none text-xs" />
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] font-mono text-mutedText/80 mt-2 text-right">1 TR = 12,000 BTU/hr = 3024 kcal/hr</div>
+          </div>
+
+          <!-- Card 4: Pressure -->
+          <div class="bg-surface border border-borderSubtle rounded-xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono font-bold text-neonAmber mb-2">
+                <span>💨 Pressure (bar ⇄ psi ⇄ kg/cm²)</span>
+                <span class="text-[10px] text-mutedText">1 bar ≈ 14.503 psi</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[10px] font-mono text-mutedText mb-0.5">bar (gauge)</label>
+                    <input type="number" id="ucBar" placeholder="bar" oninput="convPressure('bar', this.value)" class="w-full bg-inputbg text-neonGreen font-mono font-bold p-2 rounded border border-borderSubtle outline-none text-xs" />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-mono text-mutedText mb-0.5">psi (lb/in²)</label>
+                    <input type="number" id="ucPsi" placeholder="psi" oninput="convPressure('psi', this.value)" class="w-full bg-inputbg text-neonCyan font-mono font-bold p-2 rounded border border-borderSubtle outline-none text-xs" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[10px] font-mono text-mutedText mb-0.5">kg/cm²</label>
+                    <input type="number" id="ucKgcm2" placeholder="kg/cm²" oninput="convPressure('kgcm2', this.value)" class="w-full bg-inputbg text-white font-mono font-bold p-2 rounded border border-borderSubtle outline-none text-xs" />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-mono text-mutedText mb-0.5">kPa (Kilopascal)</label>
+                    <input type="number" id="ucKpa" placeholder="kPa" oninput="convPressure('kpa', this.value)" class="w-full bg-inputbg text-white font-mono font-bold p-2 rounded border border-borderSubtle outline-none text-xs" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] font-mono text-mutedText/80 mt-2 text-right">Standard plant compressed air: 7.0 bar(g) = 101.5 psi</div>
+          </div>
+
+          <!-- Card 5: Compressed Air Flow -->
+          <div class="bg-surface border border-borderSubtle rounded-xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono font-bold text-neonCyan mb-2">
+                <span>🌀 Compressed Air Flow (CFM ⇄ m³/min)</span>
+                <span class="text-[10px] text-mutedText">1 m³/min = 35.315 CFM</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">CFM (Cubic Feet / Min)</label>
+                  <input type="number" id="ucCfm" placeholder="CFM" oninput="convAirFlow('cfm', this.value)" class="w-full bg-inputbg text-neonGreen font-mono font-bold p-2 rounded border border-borderSubtle outline-none text-xs" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">m³/min (FAD)</label>
+                  <input type="number" id="ucM3min" placeholder="m³/min" oninput="convAirFlow('m3min', this.value)" class="w-full bg-inputbg text-neonCyan font-mono font-bold p-2 rounded border border-borderSubtle outline-none text-xs" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">m³/hr (Hourly Volume)</label>
+                  <input type="number" id="ucM3hr" placeholder="m³/hr" oninput="convAirFlow('m3hr', this.value)" class="w-full bg-inputbg text-white font-mono font-bold p-2 rounded border border-borderSubtle outline-none text-xs" />
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] font-mono text-mutedText/80 mt-2 text-right">Compressor FAD capacity verification</div>
+          </div>
+
+          <!-- Card 6: Cable Cross Section -->
+          <div class="bg-surface border border-borderSubtle rounded-xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono font-bold text-neonGreen mb-2">
+                <span>📏 Conductor Sizing (mm² ⇄ Approx Current)</span>
+                <span class="text-[10px] text-mutedText">Copper &amp; Aluminium</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <label class="block text-[10px] font-mono text-mutedText mb-0.5">Conductor Size (sq. mm)</label>
+                  <input type="number" id="ucMm2" placeholder="e.g. 50, 95, 185" oninput="convCable(this.value)" class="w-full bg-inputbg text-neonGreen font-mono font-bold p-2 rounded border border-borderSubtle outline-none text-xs" />
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-1 font-mono">
+                  <div class="bg-inputbg p-2 rounded border border-borderSubtle">
+                    <span class="text-[10px] text-mutedText block">Copper Capacity:</span>
+                    <span id="ucCuCurrent" class="text-neonCyan font-bold">-- A</span>
+                  </div>
+                  <div class="bg-inputbg p-2 rounded border border-borderSubtle">
+                    <span class="text-[10px] text-mutedText block">Aluminium Capacity:</span>
+                    <span id="ucAlCurrent" class="text-neonGreen font-bold">-- A</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] font-mono text-mutedText/80 mt-2 text-right">Rule of thumb: Cu ~3-4 A/mm², Al ~2-2.5 A/mm²</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="border-t border-borderSubtle bg-pitch text-center py-3 px-4 text-[11px] text-mutedText font-mono">
+    Industrial Energy Audit System • Powered by Pure Lightweight JS • BEE Certified Energy Auditor Standard Compliance
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT LOGIC ENGINE                                                  -->
+  <!-- ========================================================================= -->
+  <script>
+    /* MASTER FORMULA DATABASE */
+    const MASTER_AUDIT_DB = {
+      cat1: {
+        title: "Category 1: Electrical Fundamentals & Power Relations",
+        items: [
+          {
+            id: "p_active",
+            name: "Active Power (P)",
+            formula: "P = √3 · VL · IL · cosφ × 10⁻³  [kW]",
+            app: "Machine ki actual shaft work aur thermal output nikalna.",
+            fields: [
+              { id: "vl", label: "Line Voltage (VL)", unit: "V", default: 415, min: 1 },
+              { id: "il", label: "Line Current (IL)", unit: "A", default: 125, min: 0 },
+              { id: "pf", label: "Power Factor (cosφ)", unit: "lag", default: 0.82, min: 0, max: 1, step: 0.01 }
+            ],
+            compute: (d) => {
+              const P = (Math.sqrt(3) * d.vl * d.il * d.pf) / 1000;
+              const S = (Math.sqrt(3) * d.vl * d.il) / 1000;
+              return {
+                primaryVal: P.toFixed(2),
+                primaryUnit: "kW",
+                primaryDesc: "True Working Power (Shaft/Thermal Work)",
+                secTitle: "Apparent Power (S)",
+                secVal: S.toFixed(2),
+                secUnit: "kVA",
+                secDesc: "Total load capacity drawn from source"
+              };
+            }
+          },
+          {
+            id: "q_reactive",
+            name: "Reactive Power (Q)",
+            formula: "Q = √3 · VL · IL · sinφ × 10⁻³  [kVAR]",
+            app: "Magnetizing demand aur capacitor requirement measure karna.",
+            fields: [
+              { id: "vl", label: "Line Voltage (VL)", unit: "V", default: 415, min: 1 },
+              { id: "il", label: "Line Current (IL)", unit: "A", default: 125, min: 0 },
+              { id: "pf", label: "Power Factor (cosφ)", unit: "lag", default: 0.82, min: 0, max: 1, step: 0.01 }
+            ],
+            compute: (d) => {
+              const sinPhi = Math.sqrt(Math.max(0, 1 - Math.pow(d.pf, 2)));
+              const Q = (Math.sqrt(3) * d.vl * d.il * sinPhi) / 1000;
+              return {
+                primaryVal: Q.toFixed(2),
+                primaryUnit: "kVAR",
+                primaryDesc: "Magnetizing Demand drawn from grid",
+                secTitle: "sin(φ) Component",
+                secVal: sinPhi.toFixed(3),
+                secUnit: "",
+                secDesc: "Reactive component multiplier"
+              };
+            }
+          },
+          {
+            id: "s_apparent",
+            name: "Apparent Power (S)",
+            formula: "S = √3 · VL · IL × 10⁻³  [kVA]",
+            app: "Transformer aur DG set par total physical load burden check karna.",
+            fields: [
+              { id: "vl", label: "Line Voltage (VL)", unit: "V", default: 415, min: 1 },
+              { id: "il", label: "Line Current (IL)", unit: "A", default: 125, min: 0 }
+            ],
+            compute: (d) => {
+              const S = (Math.sqrt(3) * d.vl * d.il) / 1000;
+              return {
+                primaryVal: S.toFixed(2),
+                primaryUnit: "kVA",
+                primaryDesc: "Total Geometric Vector Power Burden",
+                secTitle: "Per Phase Power",
+                secVal: (S / 3).toFixed(2),
+                secUnit: "kVA/phase",
+                secDesc: "Distribution load per winding"
+              };
+            }
+          },
+          {
+            id: "s_vector",
+            name: "Total Power Vector (Triangle)",
+            formula: "S = √(P² + Q²)  [kVA]",
+            app: "Power Triangle se kVA demand verify karna.",
+            fields: [
+              { id: "p", label: "Active Power (P)", unit: "kW", default: 80, min: 0 },
+              { id: "q", label: "Reactive Power (Q)", unit: "kVAR", default: 50, min: 0 }
+            ],
+            compute: (d) => {
+              const S = Math.sqrt(Math.pow(d.p, 2) + Math.pow(d.q, 2));
+              const pf = S > 0 ? (d.p / S) : 1;
+              return {
+                primaryVal: S.toFixed(2),
+                primaryUnit: "kVA",
+                primaryDesc: "Hypotenuse of Power Triangle",
+                secTitle: "System Power Factor",
+                secVal: pf.toFixed(3),
+                secUnit: "lag",
+                secDesc: "cosφ = kW / kVA"
+              };
+            }
+          },
+          {
+            id: "power_factor",
+            name: "Power Factor (cosφ)",
+            formula: "cosφ = P / S = kW / kVA",
+            app: "System efficiency aur billing penalty track karna.",
+            fields: [
+              { id: "p", label: "Active Power (P)", unit: "kW", default: 85, min: 0 },
+              { id: "s", label: "Apparent Power (S)", unit: "kVA", default: 100, min: 0.1 }
+            ],
+            compute: (d) => {
+              const pf = Math.min(1, Math.max(0, d.p / d.s));
+              const deg = Math.acos(pf) * (180 / Math.PI);
+              return {
+                primaryVal: pf.toFixed(3),
+                primaryUnit: "PF",
+                primaryDesc: "Operating Displacement Power Factor",
+                secTitle: "Phase Displacement (φ)",
+                secVal: deg.toFixed(1),
+                secUnit: "Degrees (°)",
+                secDesc: "Angle between voltage & current"
+              };
+            }
+          },
+          {
+            id: "star_relation",
+            name: "Star Line-Phase Relation",
+            formula: "VL = √3 · Vph  ,  IL = Iph",
+            app: "Star connected winding aur 415 V vs 240 V conversion.",
+            fields: [
+              { id: "vph", label: "Phase Voltage (Vph)", unit: "V", default: 240, min: 0 },
+              { id: "iph", label: "Phase Current (Iph)", unit: "A", default: 60, min: 0 }
+            ],
+            compute: (d) => {
+              const vl = Math.sqrt(3) * d.vph;
+              return {
+                primaryVal: vl.toFixed(1),
+                primaryUnit: "V (Line)",
+                primaryDesc: "Line-to-Line Voltage (VL)",
+                secTitle: "Line Current (IL)",
+                secVal: d.iph.toFixed(1),
+                secUnit: "A",
+                secDesc: "IL is identical to Phase Current in Star"
+              };
+            }
+          },
+          {
+            id: "delta_relation",
+            name: "Delta Line-Phase Relation",
+            formula: "VL = Vph  ,  IL = √3 · Iph",
+            app: "Delta connected motor terminal current aur voltage analysis.",
+            fields: [
+              { id: "vl", label: "Line Voltage (VL)", unit: "V", default: 415, min: 0 },
+              { id: "iph", label: "Phase Winding Current (Iph)", unit: "A", default: 50, min: 0 }
+            ],
+            compute: (d) => {
+              const il = Math.sqrt(3) * d.iph;
+              return {
+                primaryVal: il.toFixed(1),
+                primaryUnit: "A (Line)",
+                primaryDesc: "Total Current in Feed Cables (IL)",
+                secTitle: "Phase Voltage (Vph)",
+                secVal: d.vl.toFixed(1),
+                secUnit: "V",
+                secDesc: "Full Line Voltage appears across delta coil"
+              };
+            }
+          }
+        ]
+      },
+      cat2: {
+        title: "Category 2: Power Factor Correction & Cable Loss",
+        items: [
+          {
+            id: "apfc_sizing",
+            name: "Centralized APFC Sizing (QC)",
+            formula: "QC = P · (tanφ₁ - tanφ₂)  [kVAR]",
+            app: "Main LT panel par target PF lane ke liye total capacitor sizing.",
+            fields: [
+              { id: "p", label: "Active Plant Load (P)", unit: "kW", default: 350, min: 1 },
+              { id: "pf1", label: "Existing PF (cosφ₁)", unit: "lag", default: 0.78, min: 0.1, max: 0.99, step: 0.01 },
+              { id: "pf2", label: "Target PF (cosφ₂)", unit: "lag", default: 0.98, min: 0.1, max: 1.0, step: 0.01 }
+            ],
+            compute: (d) => {
+              const phi1 = Math.acos(d.pf1);
+              const phi2 = Math.acos(d.pf2);
+              const multiplier = Math.tan(phi1) - Math.tan(phi2);
+              const qc = d.p * Math.max(0, multiplier);
+              return {
+                primaryVal: qc.toFixed(1),
+                primaryUnit: "kVAR",
+                primaryDesc: "Required Capacitor Bank Sizing",
+                secTitle: "Multiplication Factor",
+                secVal: multiplier.toFixed(3),
+                secUnit: "kVAR/kW",
+                secDesc: "(tanφ₁ - tanφ₂) multiplier"
+              };
+            }
+          },
+          {
+            id: "phase_angle_calc",
+            name: "Phase Angle from PF",
+            formula: "φ = cos⁻¹(PF)  [Degrees]",
+            app: "PF se trigonometric angle nikal kar tan table me use karna.",
+            fields: [
+              { id: "pf", label: "Power Factor (cosφ)", unit: "", default: 0.85, min: 0.01, max: 1.0, step: 0.01 }
+            ],
+            compute: (d) => {
+              const rad = Math.acos(d.pf);
+              const deg = rad * (180 / Math.PI);
+              const tanVal = Math.tan(rad);
+              return {
+                primaryVal: deg.toFixed(2),
+                primaryUnit: "Degrees (°)",
+                primaryDesc: "Phase Displacement Angle (φ)",
+                secTitle: "tan(φ) Component",
+                secVal: tanVal.toFixed(3),
+                secUnit: "",
+                secDesc: "Direct kVAR multiplier"
+              };
+            }
+          },
+          {
+            id: "motor_cap_safe",
+            name: "Individual Motor Capacitor Sizing (Safe Limit)",
+            formula: "QC ≤ 0.90 · √3 · VL · I₀ × 10⁻³  [kVAR]",
+            app: "Terminal par capacitor lagate waqt self-excitation blast se bachna (I₀ = No-load current).",
+            fields: [
+              { id: "vl", label: "Rated Line Voltage (VL)", unit: "V", default: 415, min: 100 },
+              { id: "i0", label: "Motor No-Load Current (I₀)", unit: "A", default: 22, min: 0.1 }
+            ],
+            compute: (d) => {
+              const fullQ0 = (Math.sqrt(3) * d.vl * d.i0) / 1000;
+              const safeQc = 0.90 * fullQ0;
+              return {
+                primaryVal: safeQc.toFixed(2),
+                primaryUnit: "kVAR (Max)",
+                primaryDesc: "BEE Safe Limit: 90% of No-load kVAR",
+                secTitle: "Magnetizing Demand (Q₀)",
+                secVal: fullQ0.toFixed(2),
+                secUnit: "kVAR",
+                secDesc: "Never exceed 90% to avoid self-excitation"
+              };
+            }
+          },
+          {
+            id: "cable_loss_reduction",
+            name: "Cable Loss Reduction (%)",
+            formula: "% Loss Reduction = [1 - (PF_old / PF_new)²] × 100",
+            app: "PF improve hone par distribution cables me I²R bachat justify karna.",
+            fields: [
+              { id: "pfold", label: "Existing PF (PF_old)", unit: "", default: 0.75, min: 0.1, max: 0.99, step: 0.01 },
+              { id: "pfnew", label: "Improved Target PF (PF_new)", unit: "", default: 0.98, min: 0.2, max: 1.0, step: 0.01 }
+            ],
+            compute: (d) => {
+              const ratio = d.pfold / d.pfnew;
+              const savingPct = (1 - Math.pow(ratio, 2)) * 100;
+              return {
+                primaryVal: Math.max(0, savingPct).toFixed(2),
+                primaryUnit: "% Loss Saved",
+                primaryDesc: "Reduction in Feeder I²R Loss",
+                secTitle: "Current Ratio (I_new / I_old)",
+                secVal: ratio.toFixed(3),
+                secUnit: "",
+                secDesc: "Lower current reduces feeder cable heating"
+              };
+            }
+          },
+          {
+            id: "cable_i2r_loss",
+            name: "Cable Resistance Loss (Ploss)",
+            formula: "Ploss = 3 · IL² · Rcable × 10⁻³  [kW]",
+            app: "Lambi cables me saal bhar ka thermal kWh waste calculate karna.",
+            fields: [
+              { id: "il", label: "Cable Line Current (IL)", unit: "A", default: 180, min: 0 },
+              { id: "rcable", label: "Cable Run Resistance (R)", unit: "Ω", default: 0.045, min: 0.001, step: 0.001 },
+              { id: "hrs", label: "Operating Hours/Year", unit: "hrs", default: 6000, min: 100 }
+            ],
+            compute: (d) => {
+              const ploss = (3 * Math.pow(d.il, 2) * d.rcable) / 1000;
+              const annualKwh = ploss * d.hrs;
+              return {
+                primaryVal: ploss.toFixed(2),
+                primaryUnit: "kW",
+                primaryDesc: "Continuous 3-Phase Heat Dissipation",
+                secTitle: "Annual Energy Wastage",
+                secVal: annualKwh.toFixed(0),
+                secUnit: "kWh/yr",
+                secDesc: "Financial energy loss on undersized conductor"
+              };
+            }
+          },
+          {
+            id: "cable_voltage_drop",
+            name: "Voltage Drop in Cable (ΔV)",
+            formula: "ΔV ≈ √3 · IL · L · (R·cosφ + X·sinφ)",
+            app: "Machine terminal par under-voltage drop check karna (L in km, R/X in Ω/km).",
+            fields: [
+              { id: "il", label: "Operating Current (IL)", unit: "A", default: 120, min: 0 },
+              { id: "l", label: "Run Length (L)", unit: "km", default: 0.25, min: 0.001, step: 0.01 },
+              { id: "r", label: "Resistance R", unit: "Ω/km", default: 0.32, min: 0.01, step: 0.01 },
+              { id: "x", label: "Reactance X", unit: "Ω/km", default: 0.08, min: 0, step: 0.01 },
+              { id: "pf", label: "Load PF (cosφ)", unit: "", default: 0.85, min: 0.1, max: 1.0, step: 0.01 }
+            ],
+            compute: (d) => {
+              const sinPhi = Math.sqrt(Math.max(0, 1 - Math.pow(d.pf, 2)));
+              const dv = Math.sqrt(3) * d.il * d.l * ((d.r * d.pf) + (d.x * sinPhi));
+              const pctDrop = (dv / 415) * 100;
+              return {
+                primaryVal: dv.toFixed(2),
+                primaryUnit: "Volts Drop",
+                primaryDesc: "Line-to-Line Voltage Drop",
+                secTitle: "Percentage Drop (@415V)",
+                secVal: pctDrop.toFixed(2),
+                secUnit: "%",
+                secDesc: pctDrop > 5 ? "WARNING: Exceeds 5% CEA guideline" : "Complies with CEA limits (<5%)"
+              };
+            }
+          }
+        ]
+      },
+      cat3: {
+        title: "Category 3: Transformer Energy Audit",
+        items: [
+          {
+            id: "xfmr_loading",
+            name: "Transformer Loading (%)",
+            formula: "% Loading = [ (√3 · VL · IL) / kVA_rated ] × 100",
+            app: "Transformer over-loaded (>80%) ya severely under-loaded (<30%) toh nahi hai.",
+            fields: [
+              { id: "vl", label: "Measured Secondary Voltage (VL)", unit: "V", default: 415, min: 100 },
+              { id: "il", label: "Measured Secondary Current (IL)", unit: "A", default: 720, min: 0 },
+              { id: "kvarated", label: "Nameplate Rating", unit: "kVA", default: 1000, min: 10 }
+            ],
+            compute: (d) => {
+              const opKva = (Math.sqrt(3) * d.vl * d.il) / 1000;
+              const loadPct = (opKva / d.kvarated) * 100;
+              return {
+                primaryVal: loadPct.toFixed(2),
+                primaryUnit: "% Loading",
+                primaryDesc: "Operating Capacity Utilization",
+                secTitle: "Operating Demand",
+                secVal: opKva.toFixed(1),
+                secUnit: "kVA",
+                secDesc: loadPct < 30 ? "Severely Underloaded (No-load loss dominant)" : (loadPct > 80 ? "High Loading Risk" : "Optimal Utilization Window")
+              };
+            }
+          },
+          {
+            id: "xfmr_total_loss",
+            name: "Total Transformer Loss (Ptotal_loss)",
+            formula: "Ptotal_loss = P_no-load + (% Loading / 100)² · P_full-load  [kW]",
+            app: "Do transformers me se ek band karke load shift karne par bachat nikalna.",
+            fields: [
+              { id: "pnl", label: "No-Load Iron Loss (P_nl)", unit: "kW", default: 2.2, min: 0 },
+              { id: "pfl", label: "Full-Load Copper Loss (P_fl)", unit: "kW", default: 13.5, min: 0 },
+              { id: "loadpct", label: "Operating Loading", unit: "%", default: 65, min: 0, max: 150 }
+            ],
+            compute: (d) => {
+              const copperLoss = Math.pow(d.loadpct / 100, 2) * d.pfl;
+              const totalLoss = d.pnl + copperLoss;
+              return {
+                primaryVal: totalLoss.toFixed(2),
+                primaryUnit: "kW Loss",
+                primaryDesc: "Total Continuous Thermal Dissipation",
+                secTitle: "Copper Loss Component",
+                secVal: copperLoss.toFixed(2),
+                secUnit: "kW",
+                secDesc: "Load-dependent I²R winding dissipation"
+              };
+            }
+          },
+          {
+            id: "xfmr_max_eff",
+            name: "Maximum Efficiency Loading Point",
+            formula: "% Loading_max_eff = √(P_no-load / P_full-load) × 100",
+            app: "Kis loading percentage par transformer peak efficiency deta hai (usually 40%–50%).",
+            fields: [
+              { id: "pnl", label: "No-Load / Core Loss (P_nl)", unit: "kW", default: 2.2, min: 0.1 },
+              { id: "pfl", label: "Full-Load Copper Loss (P_fl)", unit: "kW", default: 14.0, min: 0.1 }
+            ],
+            compute: (d) => {
+              const optPct = Math.sqrt(d.pnl / d.pfl) * 100;
+              return {
+                primaryVal: optPct.toFixed(2),
+                primaryUnit: "% Loading",
+                primaryDesc: "Point where Iron Loss = Copper Loss",
+                secTitle: "Design Ratio (P_nl / P_fl)",
+                secVal: (d.pnl / d.pfl).toFixed(3),
+                secUnit: "",
+                secDesc: "Standard distribution units peak at ~40-50%"
+              };
+            }
+          }
+        ]
+      },
+      cat4: {
+        title: "Category 4: Electric Motors Audit",
+        items: [
+          {
+            id: "motor_pin",
+            name: "Input Electrical Power (Pin)",
+            formula: "Pin = √3 · VL · IL · cosφ × 10⁻³  [kW]",
+            app: "Motor kitni bijli consume kar rahi hai (Meter se).",
+            fields: [
+              { id: "vl", label: "Terminal Voltage (VL)", unit: "V", default: 415, min: 100 },
+              { id: "il", label: "Terminal Current (IL)", unit: "A", default: 68, min: 0 },
+              { id: "pf", label: "Operating PF (cosφ)", unit: "", default: 0.86, min: 0.1, max: 1.0, step: 0.01 }
+            ],
+            compute: (d) => {
+              const pin = (Math.sqrt(3) * d.vl * d.il * d.pf) / 1000;
+              return {
+                primaryVal: pin.toFixed(2),
+                primaryUnit: "kW Input",
+                primaryDesc: "Electrical Power Pulled from MCC",
+                secTitle: "Shaft HP (assuming ~90% eff)",
+                secVal: ((pin * 0.90) / 0.7457).toFixed(1),
+                secUnit: "HP",
+                secDesc: "Approximate shaft work delivered"
+              };
+            }
+          },
+          {
+            id: "motor_pout",
+            name: "Shaft Mechanical Output (Pout)",
+            formula: "Pout = Pin · η_motor  [kW]",
+            app: "Machine ko actually kitna mechanical torque/work mil raha hai (η = Efficiency).",
+            fields: [
+              { id: "pin", label: "Input Electric Power (Pin)", unit: "kW", default: 42, min: 0 },
+              { id: "eta", label: "Motor Efficiency (η)", unit: "ratio", default: 0.92, min: 0.1, max: 1.0, step: 0.01 }
+            ],
+            compute: (d) => {
+              const pout = d.pin * d.eta;
+              const hp = pout / 0.7457;
+              return {
+                primaryVal: pout.toFixed(2),
+                primaryUnit: "kW Output",
+                primaryDesc: "Pure Mechanical Shaft Power",
+                secTitle: "BHP (Brake Horsepower)",
+                secVal: hp.toFixed(1),
+                secUnit: "HP",
+                secDesc: "Actual mechanical load on driven shaft"
+              };
+            }
+          },
+          {
+            id: "motor_loading",
+            name: "Motor Loading (%)",
+            formula: "% Loading = [ Pin_measured / (P_rated / η_rated) ] × 100",
+            app: "Motor over-sized toh nahi lagai gayi hai (agar <40% load hai toh rewound/downsizing candidate).",
+            fields: [
+              { id: "pin", label: "Measured Input Power", unit: "kW", default: 16.5, min: 0.1 },
+              { id: "prated", label: "Nameplate Output Rating", unit: "kW", default: 37, min: 0.1 },
+              { id: "etarated", label: "Rated Nameplate Efficiency", unit: "ratio", default: 0.93, min: 0.1, max: 1.0, step: 0.01 }
+            ],
+            compute: (d) => {
+              const fullLoadInput = d.prated / d.etarated;
+              const loadingPct = (d.pin / fullLoadInput) * 100;
+              let verdict = "Optimal (60-85%)";
+              if (loadingPct < 40) verdict = "Underloaded (Downsizing Candidate)";
+              else if (loadingPct > 100) verdict = "Overloaded (Burnout Risk)";
+              return {
+                primaryVal: loadingPct.toFixed(2),
+                primaryUnit: "% Loading",
+                primaryDesc: "Fraction of Rated Full-Load Capacity",
+                secTitle: "Diagnostic Verdict",
+                secVal: loadingPct < 45 ? "Downsize Candidate" : "Healthy Operation",
+                secUnit: "",
+                secDesc: verdict
+              };
+            }
+          },
+          {
+            id: "sync_speed",
+            name: "Synchronous Speed (Ns)",
+            formula: "Ns = (120 · f) / Poles  [RPM]",
+            app: "Frequency aur poles se magnetic field ki theoretical speed nikalna.",
+            fields: [
+              { id: "f", label: "Supply Frequency (f)", unit: "Hz", default: 50, min: 10, max: 120 },
+              { id: "poles", label: "Number of Stator Poles", unit: "Poles", default: 4, min: 2, max: 12, step: 2 }
+            ],
+            compute: (d) => {
+              const ns = (120 * d.f) / d.poles;
+              return {
+                primaryVal: Math.round(ns),
+                primaryUnit: "RPM",
+                primaryDesc: "Stator Rotating Magnetic Field Speed",
+                secTitle: "Pole Pairs",
+                secVal: (d.poles / 2).toFixed(0),
+                secUnit: "Pairs",
+                secDesc: "Standard speeds: 3000, 1500, 1000, 750 RPM"
+              };
+            }
+          },
+          {
+            id: "rotor_slip",
+            name: "Rotor Slip (s)",
+            formula: "s = (Ns - Nr) / Ns",
+            app: "Motor ke actual RPM (Nr) se motor par mechanical strain/load verify karna.",
+            fields: [
+              { id: "ns", label: "Synchronous Speed (Ns)", unit: "RPM", default: 1500, min: 100 },
+              { id: "nr", label: "Measured Tachometer Speed (Nr)", unit: "RPM", default: 1445, min: 0 }
+            ],
+            compute: (d) => {
+              const diff = d.ns - d.nr;
+              const slipPct = (diff / d.ns) * 100;
+              return {
+                primaryVal: slipPct.toFixed(2),
+                primaryUnit: "% Slip",
+                primaryDesc: "Relative lag of rotor behind field",
+                secTitle: "Slip Speed Difference",
+                secVal: diff.toFixed(0),
+                secUnit: "RPM",
+                secDesc: "Standard IE2/IE3 motors have 1.5% to 3.5% slip"
+              };
+            }
+          },
+          {
+            id: "voltage_unbalance",
+            name: "Voltage Unbalance (% VU)",
+            formula: "% VU = (Max Deviation from Vavg / Vavg) × 100",
+            app: "3-phase unbalance check karna (>1% unbalance par motor derating aur heating shuru ho jaati hai).",
+            fields: [
+              { id: "v12", label: "Phase V_RY", unit: "V", default: 418, min: 50 },
+              { id: "v23", label: "Phase V_YB", unit: "V", default: 412, min: 50 },
+              { id: "v31", label: "Phase V_BR", unit: "V", default: 404, min: 50 }
+            ],
+            compute: (d) => {
+              const vavg = (d.v12 + d.v23 + d.v31) / 3;
+              const maxDev = Math.max(Math.abs(d.v12 - vavg), Math.abs(d.v23 - vavg), Math.abs(d.v31 - vavg));
+              const vu = (maxDev / vavg) * 100;
+              return {
+                primaryVal: vu.toFixed(2),
+                primaryUnit: "% Unbalance",
+                primaryDesc: "NEMA / IEC Voltage Asymmetry",
+                secTitle: "Average Line Voltage",
+                secVal: vavg.toFixed(1),
+                secUnit: "V",
+                secDesc: vu > 1.0 ? "WARNING: >1% unbalance causes motor derating & hot spots!" : "Acceptable balance (<1%)"
+              };
+            }
+          }
+        ]
+      },
+      cat5: {
+        title: "Category 5: Power Quality & Harmonics",
+        items: [
+          {
+            id: "thd_i",
+            name: "Current Total Harmonic Distortion (THD_I)",
+            formula: "THD_I = [ √(∑ Iₕ²) / I₁ ] × 100  [%]",
+            app: "VFD/CNC drives ki wajah se cable aur transformer me harmonic pollution measure karna.",
+            fields: [
+              { id: "i1", label: "Fundamental Current (I₁)", unit: "A", default: 100, min: 1 },
+              { id: "i3", label: "3rd Harmonic Current (I₃)", unit: "A", default: 6, min: 0 },
+              { id: "i5", label: "5th Harmonic Current (I₅)", unit: "A", default: 22, min: 0 },
+              { id: "i7", label: "7th Harmonic Current (I₇)", unit: "A", default: 11, min: 0 },
+              { id: "i11", label: "11th Harmonic Current (I₁₁)", unit: "A", default: 6, min: 0 }
+            ],
+            compute: (d) => {
+              const sumHarmSq = Math.pow(d.i3, 2) + Math.pow(d.i5, 2) + Math.pow(d.i7, 2) + Math.pow(d.i11, 2);
+              const thdi = (Math.sqrt(sumHarmSq) / d.i1) * 100;
+              const trueRms = Math.sqrt(Math.pow(d.i1, 2) + sumHarmSq);
+              return {
+                primaryVal: thdi.toFixed(2),
+                primaryUnit: "% THD_I",
+                primaryDesc: "Harmonic content relative to fundamental",
+                secTitle: "True RMS Current (I_total)",
+                secVal: trueRms.toFixed(1),
+                secUnit: "A",
+                secDesc: "Causes extra heating in transformer & neutral"
+              };
+            }
+          },
+          {
+            id: "thd_v",
+            name: "Voltage Total Harmonic Distortion (THD_V)",
+            formula: "THD_V = [ √(∑ Vₕ²) / V₁ ] × 100  [%]",
+            app: "IEEE 519 compliance check (LT busbar par standard limit <5%).",
+            fields: [
+              { id: "v1", label: "Fundamental Voltage (V₁)", unit: "V", default: 415, min: 100 },
+              { id: "v3", label: "3rd Harmonic Voltage (V₃)", unit: "V", default: 4, min: 0 },
+              { id: "v5", label: "5th Harmonic Voltage (V₅)", unit: "V", default: 14, min: 0 },
+              { id: "v7", label: "7th Harmonic Voltage (V₇)", unit: "V", default: 9, min: 0 }
+            ],
+            compute: (d) => {
+              const sumHarmSq = Math.pow(d.v3, 2) + Math.pow(d.v5, 2) + Math.pow(d.v7, 2);
+              const thdv = (Math.sqrt(sumHarmSq) / d.v1) * 100;
+              return {
+                primaryVal: thdv.toFixed(2),
+                primaryUnit: "% THD_V",
+                primaryDesc: "Busbar Voltage Waveform Distortion",
+                secTitle: "IEEE 519 Status",
+                secVal: thdv <= 5.0 ? "PASS (<5%)" : "FAIL (>5%)",
+                secUnit: "",
+                secDesc: thdv <= 5.0 ? "Complies with IEEE 519 standard" : "Requires Active Harmonic Filter"
+              };
+            }
+          },
+          {
+            id: "true_power_factor",
+            name: "True Power Factor (Distorted)",
+            formula: "PF_true = PF_displacement · [ 1 / √(1 + (THD_I / 100)²) ]",
+            app: "VFD lage hone par meter ka displacement PF vs actual distorted PF ka difference pakadna.",
+            fields: [
+              { id: "dpf", label: "Displacement PF (cosφ₁)", unit: "", default: 0.95, min: 0.1, max: 1.0, step: 0.01 },
+              { id: "thdi", label: "Current THD (% THD_I)", unit: "%", default: 32, min: 0, max: 150 }
+            ],
+            compute: (d) => {
+              const distFactor = 1 / Math.sqrt(1 + Math.pow(d.thdi / 100, 2));
+              const truePf = d.dpf * distFactor;
+              return {
+                primaryVal: truePf.toFixed(3),
+                primaryUnit: "PF_true",
+                primaryDesc: "Actual billing/real power factor",
+                secTitle: "Distortion Factor (DF)",
+                secVal: distFactor.toFixed(3),
+                secUnit: "",
+                secDesc: "Standard capacitors only correct displacement PF"
+              };
+            }
+          },
+          {
+            id: "detuned_reactor",
+            name: "Detuned Reactor Tuning Factor (p)",
+            formula: "p = (f_mains / f_res)² × 100 = 7% (189Hz) ya 5.67% (210Hz)",
+            app: "Capacitor ko 5th/7th harmonic par fatne se bachane ke liye series reactor sizing.",
+            fields: [
+              { id: "qcap", label: "Standard Capacitor Bank", unit: "kVAR", default: 100, min: 5 },
+              { id: "pfact", label: "Reactor Factor (p)", unit: "%", default: 7.0, min: 1, max: 14, step: 0.1 },
+              { id: "vsys", label: "System Nominal Voltage", unit: "V", default: 415, min: 100 }
+            ],
+            compute: (d) => {
+              const fres = 50 / Math.sqrt(d.pfact / 100);
+              const vcap = d.vsys / (1 - (d.pfact / 100));
+              const qeffective = d.qcap / (1 - (d.pfact / 100));
+              return {
+                primaryVal: fres.toFixed(1),
+                primaryUnit: "Hz (Resonance)",
+                primaryDesc: "Series Resonant Tuning Frequency",
+                secTitle: "Required Capacitor Voltage Rating",
+                secVal: vcap.toFixed(0),
+                secUnit: "V Rated",
+                secDesc: `Voltage rise across capacitor! Effective output: ${qeffective.toFixed(1)} kVAR`
+              };
+            }
+          }
+        ]
+      },
+      cat6: {
+        title: "Category 6: Plant Utilities (Compressors & Pumps)",
+        items: [
+          {
+            id: "comp_sec",
+            name: "Specific Power Consumption (SEC - Compressor)",
+            formula: "SEC = Total Input Power [kW] / Free Air Delivered [CFM]",
+            app: "Compressor health bench-mark karna (Standard screw compressor: 0.18–0.22 kW/CFM).",
+            fields: [
+              { id: "pkw", label: "Total Measured Compressor Input", unit: "kW", default: 55, min: 1 },
+              { id: "fad", label: "Free Air Delivery (FAD)", unit: "CFM", default: 280, min: 1 }
+            ],
+            compute: (d) => {
+              const sec = d.pkw / d.fad;
+              let bench = "Normal Range (0.18 - 0.22)";
+              if (sec < 0.18) bench = "Excellent Performance";
+              else if (sec > 0.23) bench = "Poor / Heavy Throttling Loss";
+              return {
+                primaryVal: sec.toFixed(3),
+                primaryUnit: "kW / CFM",
+                primaryDesc: "Specific Energy per Volume of compressed air",
+                secTitle: "BEE Benchmark Assessment",
+                secVal: sec.toFixed(3) + " kW/CFM",
+                secUnit: "",
+                secDesc: bench
+              };
+            }
+          },
+          {
+            id: "air_leakage_pumpup",
+            name: "Air Leakage Quantity (Q_leak)",
+            formula: "Q_leak = [ V_receiver · (P₁ - P₂) ] / ( P_atm · t )  [m³/min]",
+            app: "Pump-up test se poore plant ke pneumatic leakage losses (kWh/year) nikalna.",
+            fields: [
+              { id: "vrec", label: "System Air Volume (Receiver + Mains)", unit: "m³", default: 15, min: 0.1 },
+              { id: "p1", label: "Cut-out Initial Pressure", unit: "bar(g)", default: 7.2, min: 0 },
+              { id: "p2", label: "Cut-in Final Pressure", unit: "bar(g)", default: 6.0, min: 0 },
+              { id: "tmin", label: "Leak Drop Time (t)", unit: "Minutes", default: 12, min: 0.1 },
+              { id: "patm", label: "Atmospheric Absolute Pressure", unit: "bar(a)", default: 1.013, min: 0.5 }
+            ],
+            compute: (d) => {
+              const qleak = (d.vrec * (d.p1 - d.p2)) / (d.patm * d.tmin);
+              const cfm = qleak * 35.3147;
+              return {
+                primaryVal: qleak.toFixed(3),
+                primaryUnit: "m³/min",
+                primaryDesc: "Volumetric Plant Compressed Air Leakage",
+                secTitle: "Leakage in CFM",
+                secVal: cfm.toFixed(1),
+                secUnit: "CFM",
+                secDesc: "Standard audit target: Leakage must be below 10% of total FAD"
+              };
+            }
+          },
+          {
+            id: "pump_hydraulic_power",
+            name: "Hydraulic Pump Power (P_hydraulic)",
+            formula: "P_hyd = ( Q · ρ · g · H ) / ( 1000 · 3600 )  [kW]",
+            app: "Flow (Q in m³/hr) aur Head (H in meters) se actual liquid pumping work nikalna.",
+            fields: [
+              { id: "flow", label: "Flow Rate (Q)", unit: "m³/hr", default: 150, min: 0.1 },
+              { id: "head", label: "Total Dynamic Head (H)", unit: "m", default: 45, min: 0.1 },
+              { id: "density", label: "Fluid Density (ρ)", unit: "kg/m³", default: 1000, min: 100 }
+            ],
+            compute: (d) => {
+              const g = 9.81;
+              const phyd = (d.flow * d.density * g * d.head) / (1000 * 3600);
+              const hp = phyd / 0.7457;
+              return {
+                primaryVal: phyd.toFixed(2),
+                primaryUnit: "kW Hydraulic",
+                primaryDesc: "Net Fluid Energy Imparted to Liquid",
+                secTitle: "Hydraulic Horsepower",
+                secVal: hp.toFixed(1),
+                secUnit: "HP",
+                secDesc: "Useful work done by the pump impeller"
+              };
+            }
+          },
+          {
+            id: "pump_efficiency",
+            name: "Pump Operating Efficiency (η_pump)",
+            formula: "η_pump = [ P_hydraulic / ( P_elec_in · η_motor ) ] × 100",
+            app: "Pump worn-out hai ya throttling valve ki wajah se energy waste ho rahi hai.",
+            fields: [
+              { id: "phyd", label: "Hydraulic Output (Phyd)", unit: "kW", default: 18.4, min: 0.1 },
+              { id: "pin", label: "Motor Electric Input (Pin)", unit: "kW", default: 30.0, min: 0.1 },
+              { id: "etamoto", label: "Motor Efficiency (η_motor)", unit: "ratio", default: 0.91, min: 0.5, max: 1.0, step: 0.01 }
+            ],
+            compute: (d) => {
+              const pShaft = d.pin * d.etamoto;
+              const eff = (d.phyd / pShaft) * 100;
+              return {
+                primaryVal: eff.toFixed(2),
+                primaryUnit: "% Efficiency",
+                primaryDesc: "Actual Operating Pump Efficiency",
+                secTitle: "Shaft Input to Pump",
+                secVal: pShaft.toFixed(2),
+                secUnit: "kW",
+                secDesc: eff < 50 ? "Heavy Throttling or Impeller Wear" : "Healthy Best Efficiency Point (BEP)"
+              };
+            }
+          }
+        ]
+      }
+    };
+
+    /* STATE MANAGEMENT */
+    let currentCatKey = "cat1";
+    let currentItem = MASTER_AUDIT_DB.cat1.items[0];
+
+    // Dual Trace (V vs I) State
+    const dualState = {
+      vm: 325,
+      im: 100,
+      freq: 50,
+      phiV: 0,
+      phiI: -37,
+      timeSpanMs: 40,
+      animating: true,
+      timeOffset: 0
+    };
+
+    // Harmonics State
+    const harmState = {
+      h1: 100,
+      h3: 5,
+      h5: 22,
+      h7: 12,
+      h9: 3,
+      h11: 6
+    };
+
+    let animationFrameId = null;
+
+    /* TAB NAVIGATION */
+    function switchNavTab(tabName) {
+      const tabs = ['calculator', 'dualplotter', 'harmonics', 'converter'];
+      const buttons = [
+        document.getElementById('btnTab1'),
+        document.getElementById('btnTab2'),
+        document.getElementById('btnTab3'),
+        document.getElementById('btnTab4')
+      ];
+      const sections = [
+        document.getElementById('tab1Section'),
+        document.getElementById('tab2Section'),
+        document.getElementById('tab3Section'),
+        document.getElementById('tab4Section')
+      ];
+
+      tabs.forEach((t, i) => {
+        if (t === tabName) {
+          buttons[i].classList.add('tab-active');
+          sections[i].classList.remove('hidden');
+        } else {
+          buttons[i].classList.remove('tab-active');
+          sections[i].classList.add('hidden');
+        }
+      });
+
+      if (tabName === 'dualplotter') {
+        setTimeout(initDualCanvas, 30);
+      } else if (tabName === 'harmonics') {
+        setTimeout(drawHarmonicWaveform, 30);
+      }
+    }
+
+    /* TAB 1: AUDIT CALCULATOR FUNCTIONS */
+    function initCalculator() {
+      const catSelect = document.getElementById("calcCatSelect");
+      catSelect.value = "cat1";
+      handleCatChange();
+    }
+
+    function handleCatChange() {
+      const catKey = document.getElementById("calcCatSelect").value;
+      currentCatKey = catKey;
+      const formulaSelect = document.getElementById("calcFormulaSelect");
+      formulaSelect.innerHTML = "";
+
+      const items = MASTER_AUDIT_DB[catKey].items;
+      items.forEach((item) => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = item.name;
+        formulaSelect.appendChild(opt);
+      });
+
+      handleFormulaChange();
+    }
+
+    function handleFormulaChange() {
+      const formulaId = document.getElementById("calcFormulaSelect").value;
+      const category = MASTER_AUDIT_DB[currentCatKey];
+      currentItem = category.items.find(x => x.id === formulaId);
+
+      document.getElementById("badgeCategory").textContent = category.title;
+      document.getElementById("displayParamTitle").textContent = currentItem.name;
+      document.getElementById("displayFormulaCode").textContent = currentItem.formula;
+      document.getElementById("displayFieldApp").textContent = currentItem.app;
+
+      renderInputFields(currentItem.fields);
+      recalculate();
+    }
+
+    function renderInputFields(fields) {
+      const container = document.getElementById("dynamicFieldsContainer");
+      container.innerHTML = "";
+
+      fields.forEach((f) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "flex flex-col gap-1";
+        wrapper.innerHTML = `
+          <div class="flex justify-between items-center text-[11px] font-mono text-mutedText">
+            <label for="inp_${f.id}" class="truncate text-gray-300 font-medium">${f.label}</label>
+            <span class="text-neonCyan font-bold">${f.unit || ""}</span>
+          </div>
+          <input 
+            type="number" 
+            id="inp_${f.id}" 
+            value="${f.default}" 
+            step="${f.step || 'any'}"
+            ${f.min !== undefined ? `min="${f.min}"` : ''}
+            ${f.max !== undefined ? `max="${f.max}"` : ''}
+            oninput="recalculate()"
+            class="w-full bg-inputbg text-white font-mono font-semibold text-xs px-2.5 py-2 rounded-lg border border-borderSubtle focus:border-neonGreen outline-none transition-colors"
+          />
+        `;
+        container.appendChild(wrapper);
+      });
+    }
+
+    function recalculate() {
+      if (!currentItem) return;
+
+      const inputValues = {};
+      currentItem.fields.forEach((f) => {
+        const el = document.getElementById(`inp_${f.id}`);
+        const parsed = parseFloat(el.value);
+        inputValues[f.id] = isNaN(parsed) ? 0 : parsed;
+      });
+
+      const outcome = currentItem.compute(inputValues);
+
+      document.getElementById("resPrimaryValue").textContent = outcome.primaryVal;
+      document.getElementById("resPrimaryUnit").textContent = outcome.primaryUnit;
+      document.getElementById("resPrimaryDesc").textContent = outcome.primaryDesc;
+
+      document.getElementById("resSecondaryTitle").textContent = outcome.secTitle;
+      document.getElementById("resSecondaryValue").textContent = outcome.secVal;
+      document.getElementById("resSecondaryUnit").textContent = outcome.secUnit;
+      document.getElementById("resSecondaryDesc").textContent = outcome.secDesc;
+    }
+
+    function copyCurrentFormula() {
+      if (!currentItem) return;
+      const text = `${currentItem.name}: ${currentItem.formula}`;
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        const copyEl = document.getElementById("copyText");
+        copyEl.textContent = "Copied!";
+        setTimeout(() => { copyEl.textContent = "Copy Formula"; }, 1500);
+      } catch (err) {}
+      document.body.removeChild(ta);
+    }
+
+    /* TAB 2: AC WAVEFORM & PHASE VISUALIZER (V vs I) */
+    function initDualCanvas() {
+      updateDualWaveform();
+      if (!animationFrameId) {
+        runDualWaveAnimation();
+      }
+    }
+
+    function toggleWaveAnimation() {
+      dualState.animating = !dualState.animating;
+      const btnLabel = document.getElementById("playLabel");
+      const btnIcon = document.getElementById("playIcon");
+      if (dualState.animating) {
+        btnLabel.textContent = "Pause Wave";
+        btnIcon.textContent = "⏸";
+        runDualWaveAnimation();
+      } else {
+        btnLabel.textContent = "Play Live";
+        btnIcon.textContent = "▶";
+      }
+    }
+
+    function resetPhaseValues() {
+      document.getElementById("inputVm").value = 325;
+      document.getElementById("inputIm").value = 100;
+      document.getElementById("inputFreq").value = 50;
+      document.getElementById("inputPhiV").value = 0;
+      document.getElementById("inputPhiI").value = -37;
+      document.getElementById("inputTimeSpan").value = 40;
+      updateDualWaveform();
+    }
+
+    function updateDualWaveform() {
+      dualState.vm = parseFloat(document.getElementById("inputVm").value) || 325;
+      dualState.im = parseFloat(document.getElementById("inputIm").value) || 100;
+      dualState.freq = parseFloat(document.getElementById("inputFreq").value) || 50;
+      dualState.phiV = parseFloat(document.getElementById("inputPhiV").value) || 0;
+      dualState.phiI = parseFloat(document.getElementById("inputPhiI").value) || 0;
+      dualState.timeSpanMs = parseFloat(document.getElementById("inputTimeSpan").value) || 40;
+
+      // Update UI readout labels
+      document.getElementById("valVmText").textContent = `${dualState.vm} V`;
+      document.getElementById("valImText").textContent = `${dualState.im} A`;
+      document.getElementById("valFreqText").textContent = `${dualState.freq} Hz`;
+      const omega = (2 * Math.PI * dualState.freq).toFixed(1);
+      document.getElementById("valOmegaText").textContent = `ω = ${omega} rad/s`;
+      document.getElementById("valPhiVText").textContent = `${dualState.phiV}°`;
+      document.getElementById("valPhiIText").textContent = `${dualState.phiI}°`;
+      document.getElementById("valTimeSpanText").textContent = `${dualState.timeSpanMs} ms`;
+      document.getElementById("timeScaleBadge").textContent = `${dualState.timeSpanMs.toFixed(1)} ms`;
+
+      // Phase Diagnosis
+      const deltaPhiDeg = dualState.phiV - dualState.phiI;
+      const deltaRad = (deltaPhiDeg * Math.PI) / 180;
+      const pf = Math.cos(deltaRad);
+
+      document.getElementById("diagDeltaPhi").textContent = `${deltaPhiDeg.toFixed(1)}°`;
+      document.getElementById("diagDeltaRad").textContent = `(${deltaRad.toFixed(2)} rad)`;
+      document.getElementById("diagPfVal").textContent = Math.abs(pf).toFixed(3);
+
+      const natureBadge = document.getElementById("diagNatureBadge");
+      const natureDesc = document.getElementById("diagNatureDesc");
+
+      if (Math.abs(deltaPhiDeg) < 2.0) {
+        natureBadge.className = "mt-1 inline-flex items-center gap-1 text-xs font-mono font-bold px-2.5 py-1 rounded bg-neonGreen/10 text-neonGreen border border-neonGreen/40";
+        natureBadge.innerHTML = "<span>✨</span><span>UNITY (Pure Resistive - In Phase)</span>";
+        natureDesc.textContent = "Voltage and Current waves peak simultaneously (cosφ ≈ 1.0). Maximum transmission efficiency.";
+      } else if (deltaPhiDeg > 0) {
+        natureBadge.className = "mt-1 inline-flex items-center gap-1 text-xs font-mono font-bold px-2.5 py-1 rounded bg-neonAmber/10 text-neonAmber border border-neonAmber/40";
+        natureBadge.innerHTML = "<span>⚠️</span><span>LAGGING (Inductive Load - Current Lags V)</span>";
+        natureDesc.textContent = "Induction Motors/Transformers create magnetic lag. Current waveform reaches peak AFTER Voltage.";
+      } else {
+        natureBadge.className = "mt-1 inline-flex items-center gap-1 text-xs font-mono font-bold px-2.5 py-1 rounded bg-neonCyan/10 text-neonCyan border border-neonCyan/40";
+        natureBadge.innerHTML = "<span>⚡</span><span>LEADING (Capacitive Load - Current Leads V)</span>";
+        natureDesc.textContent = "Capacitor banks / over-excited synchronous motors. Current waveform reaches peak BEFORE Voltage.";
+      }
+
+      if (!dualState.animating) {
+        renderDualWaveCanvas();
+      }
+    }
+
+    function runDualWaveAnimation() {
+      if (!dualState.animating) return;
+      dualState.timeOffset += 0.0006;
+      renderDualWaveCanvas();
+      animationFrameId = requestAnimationFrame(runDualWaveAnimation);
+    }
+
+    function renderDualWaveCanvas() {
+      const canvas = document.getElementById("dualWaveCanvas");
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      if (canvas.width !== Math.floor(rect.width * dpr) || canvas.height !== Math.floor(rect.height * dpr)) {
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+      }
+
+      const ctx = canvas.getContext("2d");
+      ctx.save();
+      ctx.scale(dpr, dpr);
+
+      const width = rect.width;
+      const height = rect.height;
+      const centerY = height / 2;
+
+      // Pitch black clear
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, width, height);
+
+      // Grid background
+      ctx.strokeStyle = "rgba(21, 34, 51, 0.8)";
+      ctx.lineWidth = 1;
+
+      const numXDivs = 10;
+      for (let i = 0; i <= numXDivs; i++) {
+        const x = (width / numXDivs) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+
+      // Center Reference line
+      ctx.strokeStyle = "rgba(0, 229, 255, 0.25)";
+      ctx.beginPath();
+      ctx.moveTo(0, centerY);
+      ctx.lineTo(width, centerY);
+      ctx.stroke();
+
+      for (let y = centerY % 35; y < height; y += 35) {
+        if (Math.abs(y - centerY) > 2) {
+          ctx.strokeStyle = "rgba(21, 34, 51, 0.6)";
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+      }
+
+      // Convert inputs
+      const maxTimeSec = dualState.timeSpanMs / 1000;
+      const omega = 2 * Math.PI * dualState.freq;
+      const radV = (dualState.phiV * Math.PI) / 180;
+      const radI = (dualState.phiI * Math.PI) / 180;
+
+      // Scaling factors to normalize amplitude to ~40% of canvas height
+      const vScale = (height * 0.40) * (dualState.vm / 500);
+      const iScale = (height * 0.35) * (dualState.im / 250);
+
+      // Draw Voltage Trace (Cyan #00E5FF)
+      ctx.beginPath();
+      ctx.strokeStyle = "#00E5FF";
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = "rgba(0, 229, 255, 0.6)";
+      ctx.shadowBlur = 6;
+
+      for (let px = 0; px <= width; px++) {
+        const t = (px / width) * maxTimeSec + (dualState.animating ? dualState.timeOffset : 0);
+        const vInstant = Math.sin(omega * t + radV);
+        const y = centerY - vInstant * vScale;
+        if (px === 0) ctx.moveTo(px, y);
+        else ctx.lineTo(px, y);
+      }
+      ctx.stroke();
+
+      // Draw Current Trace (Neon Green #00FFB2)
+      ctx.beginPath();
+      ctx.strokeStyle = "#00FFB2";
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = "rgba(0, 255, 178, 0.7)";
+      ctx.shadowBlur = 6;
+
+      for (let px = 0; px <= width; px++) {
+        const t = (px / width) * maxTimeSec + (dualState.animating ? dualState.timeOffset : 0);
+        const iInstant = Math.sin(omega * t + radI);
+        const y = centerY - iInstant * iScale;
+        if (px === 0) ctx.moveTo(px, y);
+        else ctx.lineTo(px, y);
+      }
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    /* TAB 3: HARMONICS SYNTHESIZER */
+    function updateHarmonicSlider(hKey, val) {
+      harmState[hKey] = parseFloat(val) || 0;
+      document.getElementById(`harm${hKey.substring(1)}Val`).textContent = `${val}%`;
+      drawHarmonicWaveform();
+    }
+
+    function drawHarmonicWaveform() {
+      const canvas = document.getElementById("harmonicCanvas");
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      if (canvas.width !== Math.floor(rect.width * dpr) || canvas.height !== Math.floor(rect.height * dpr)) {
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+      }
+
+      const ctx = canvas.getContext("2d");
+      ctx.save();
+      ctx.scale(dpr, dpr);
+
+      const width = rect.width;
+      const height = rect.height;
+      const centerY = height / 2;
+
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, width, height);
+
+      // Grid lines
+      ctx.strokeStyle = "rgba(21, 34, 51, 0.7)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= width; x += width / 12) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.moveTo(0, centerY);
+      ctx.lineTo(width, centerY);
+      ctx.stroke();
+
+      const { h1, h3, h5, h7, h9, h11 } = harmState;
+      const sumHarmonicsSq = Math.pow(h3, 2) + Math.pow(h5, 2) + Math.pow(h7, 2) + Math.pow(h9, 2) + Math.pow(h11, 2);
+      const thd = h1 > 0 ? (Math.sqrt(sumHarmonicsSq) / h1) * 100 : 0;
+
+      document.getElementById("thdCalculated").textContent = thd.toFixed(1);
+      const badge = document.getElementById("ieeeComplianceBadge");
+      if (thd <= 5.0) {
+        badge.textContent = "COMPLIANT (≤5.0%)";
+        badge.className = "mt-1 inline-flex items-center text-xs font-mono font-bold px-2 py-0.5 rounded bg-neonGreen/10 text-neonGreen border border-neonGreen/40";
+      } else {
+        badge.textContent = "NON-COMPLIANT (>5.0%)";
+        badge.className = "mt-1 inline-flex items-center text-xs font-mono font-bold px-2 py-0.5 rounded bg-neonRed/10 text-neonRed border border-neonRed/30";
+      }
+
+      const totalMag = h1 + h3 + h5 + h7 + h9 + h11;
+      const amp = (height * 0.42) * (h1 / Math.max(100, totalMag * 0.72));
+
+      // Draw Fundamental 50Hz Reference (Cyan Dashed)
+      ctx.beginPath();
+      ctx.strokeStyle = "#00E5FF";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+
+      for (let px = 0; px <= width; px++) {
+        const theta = (px / width) * 4 * Math.PI; // 2 complete AC cycles
+        const y = centerY - Math.sin(theta) * amp;
+        if (px === 0) ctx.moveTo(px, y);
+        else ctx.lineTo(px, y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw Resulting Distorted Waveform (Neon Green Solid Glow)
+      ctx.beginPath();
+      ctx.strokeStyle = "#00FFB2";
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = "rgba(0, 255, 178, 0.7)";
+      ctx.shadowBlur = 8;
+
+      for (let px = 0; px <= width; px++) {
+        const t = (px / width) * 4 * Math.PI;
+        const instSum = 
+          (h1 * Math.sin(t)) +
+          (h3 * Math.sin(3 * t)) +
+          (h5 * Math.sin(5 * t)) +
+          (h7 * Math.sin(7 * t)) +
+          (h9 * Math.sin(9 * t)) +
+          (h11 * Math.sin(11 * t));
+
+        const normalized = instSum / 100;
+        const y = centerY - (normalized * amp);
+
+        if (px === 0) ctx.moveTo(px, y);
+        else ctx.lineTo(px, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function calcFilterDesign() {
+      const qcap = parseFloat(document.getElementById("filtQcap").value) || 100;
+      const pfact = parseFloat(document.getElementById("filtFactor").value) || 7.0;
+      const vsys = parseFloat(document.getElementById("filtVsys").value) || 415;
+
+      const pDecimal = pfact / 100;
+      const fres = 50 / Math.sqrt(pDecimal);
+      const vcap = vsys / (1 - pDecimal);
+      const qeffective = qcap / (1 - pDecimal);
+      const reactKvar = qeffective * pDecimal;
+
+      document.getElementById("filtResFreq").textContent = `${fres.toFixed(1)} Hz`;
+      document.getElementById("filtCapRating").textContent = `${vcap.toFixed(0)} V Rated`;
+      document.getElementById("filtEffQ").textContent = `${qeffective.toFixed(1)} kVAR`;
+      document.getElementById("filtReactKvar").textContent = `${reactKvar.toFixed(1)} kVAR`;
+    }
+
+    /* TAB 4: COMPREHENSIVE INDUSTRIAL UNIT CONVERTER */
+    function convPower(src, val) {
+      const v = parseFloat(val);
+      if (isNaN(v)) {
+        if (src === 'hp') document.getElementById("ucKw").value = "";
+        else document.getElementById("ucHp").value = "";
+        return;
+      }
+      if (src === 'hp') {
+        document.getElementById("ucKw").value = (v * 0.745699872).toFixed(2);
+      } else {
+        document.getElementById("ucHp").value = (v / 0.745699872).toFixed(2);
+      }
+    }
+
+    function convThermal(src, val) {
+      const v = parseFloat(val);
+      const kcalEl = document.getElementById("ucKcal");
+      const kwhEl = document.getElementById("ucKwh");
+      const btuEl = document.getElementById("ucBtu");
+
+      if (isNaN(v)) {
+        kcalEl.value = ""; kwhEl.value = ""; btuEl.value = "";
+        return;
+      }
+
+      if (src === 'kcal') {
+        kwhEl.value = (v / 859.845).toFixed(3);
+        btuEl.value = (v * 3.96832).toFixed(1);
+      } else if (src === 'kwh') {
+        kcalEl.value = (v * 859.845).toFixed(1);
+        btuEl.value = (v * 3412.14).toFixed(1);
+      } else if (src === 'btu') {
+        kcalEl.value = (v / 3.96832).toFixed(1);
+        kwhEl.value = (v / 3412.14).toFixed(3);
+      }
+    }
+
+    function convChiller(src, val) {
+      const v = parseFloat(val);
+      const trEl = document.getElementById("ucTr");
+      const kwEl = document.getElementById("ucTrKw");
+      const kcalEl = document.getElementById("ucTrKcal");
+
+      if (isNaN(v)) {
+        trEl.value = ""; kwEl.value = ""; kcalEl.value = "";
+        return;
+      }
+
+      if (src === 'tr') {
+        kwEl.value = (v * 3.51685).toFixed(2);
+        kcalEl.value = (v * 3023.95).toFixed(0);
+      } else if (src === 'kw') {
+        trEl.value = (v / 3.51685).toFixed(2);
+        kcalEl.value = (v * 859.845).toFixed(0);
+      } else if (src === 'kcal') {
+        trEl.value = (v / 3023.95).toFixed(2);
+        kwEl.value = (v / 859.845).toFixed(2);
+      }
+    }
+
+    function convPressure(src, val) {
+      const v = parseFloat(val);
+      const barEl = document.getElementById("ucBar");
+      const psiEl = document.getElementById("ucPsi");
+      const kgEl = document.getElementById("ucKgcm2");
+      const kpaEl = document.getElementById("ucKpa");
+
+      if (isNaN(v)) {
+        barEl.value = ""; psiEl.value = ""; kgEl.value = ""; kpaEl.value = "";
+        return;
+      }
+
+      let barVal = 0;
+      if (src === 'bar') barVal = v;
+      else if (src === 'psi') barVal = v / 14.5038;
+      else if (src === 'kgcm2') barVal = v / 1.01972;
+      else if (src === 'kpa') barVal = v / 100;
+
+      if (src !== 'bar') barEl.value = barVal.toFixed(3);
+      if (src !== 'psi') psiEl.value = (barVal * 14.5038).toFixed(2);
+      if (src !== 'kgcm2') kgEl.value = (barVal * 1.01972).toFixed(3);
+      if (src !== 'kpa') kpaEl.value = (barVal * 100).toFixed(1);
+    }
+
+    function convAirFlow(src, val) {
+      const v = parseFloat(val);
+      const cfmEl = document.getElementById("ucCfm");
+      const m3minEl = document.getElementById("ucM3min");
+      const m3hrEl = document.getElementById("ucM3hr");
+
+      if (isNaN(v)) {
+        cfmEl.value = ""; m3minEl.value = ""; m3hrEl.value = "";
+        return;
+      }
+
+      let m3min = 0;
+      if (src === 'm3min') m3min = v;
+      else if (src === 'cfm') m3min = v / 35.3147;
+      else if (src === 'm3hr') m3min = v / 60;
+
+      if (src !== 'm3min') m3minEl.value = m3min.toFixed(3);
+      if (src !== 'cfm') cfmEl.value = (m3min * 35.3147).toFixed(1);
+      if (src !== 'm3hr') m3hrEl.value = (m3min * 60).toFixed(1);
+    }
+
+    function convCable(val) {
+      const v = parseFloat(val);
+      const cuEl = document.getElementById("ucCuCurrent");
+      const alEl = document.getElementById("ucAlCurrent");
+
+      if (isNaN(v) || v <= 0) {
+        cuEl.textContent = "-- A";
+        alEl.textContent = "-- A";
+        return;
+      }
+
+      // Conservative industrial rule of thumb for standard MCC runs
+      const cuAmp = Math.round(v * 3.4);
+      const alAmp = Math.round(v * 2.3);
+
+      cuEl.textContent = `~${cuAmp} A`;
+      alEl.textContent = `~${alAmp} A`;
+    }
+
+    /* GLOBAL INITIALIZER */
+    window.addEventListener("DOMContentLoaded", () => {
+      initCalculator();
+      calcFilterDesign();
+
+      // Window resize handler for canvas elements
+      window.addEventListener("resize", () => {
+        if (!document.getElementById("tab2Section").classList.contains("hidden")) {
+          renderDualWaveCanvas();
+        }
+        if (!document.getElementById("tab3Section").classList.contains("hidden")) {
+          drawHarmonicWaveform();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
